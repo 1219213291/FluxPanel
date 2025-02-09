@@ -16,6 +16,7 @@ from utils.log_util import logger
 from fastapi import FastAPI, Request
 
 from utils.response_util import ResponseUtil
+# a
 
 
 # 生命周期事件
@@ -54,7 +55,7 @@ async def block_post_requests(request: Request, call_next):
     response = await call_next(request)
     return response
 
-
+# a
 # 加载中间件处理方法
 handle_middleware(app)
 # 加载全局异常处理方法

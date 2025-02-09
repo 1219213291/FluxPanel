@@ -2,7 +2,6 @@ from fastapi import APIRouter
 
 from module_admin.controller.cache_controller import cacheController
 from module_admin.controller.captcha_controller import captchaController
-from module_admin.controller.car_info_controller import carInfoController
 from module_admin.controller.common_controller import commonController
 from module_admin.controller.config_controller import configController
 from module_admin.controller.dept_controller import deptController
@@ -21,7 +20,9 @@ from module_admin.controller.user_controller import userController
 from module_app.controller.app_login_controller import appLoginController
 from module_gen.controller.gen_controller import gen1Controller
 from module_website.controller.home_controller import homeRouter
-
+from module_auto.controller.car_info_controller import carInfoController
+from module_auto.controller.auto_script_controller import autoScriptController
+from module_auto.controller.auto_env_controller import autoEnvController
 admin_controllers = [
     {'router': loginController, 'tags': ['登录模块']},
     {'router': captchaController, 'tags': ['验证码模块']},
@@ -41,8 +42,10 @@ admin_controllers = [
     {'router': commonController, 'tags': ['通用模块']},
     {'router': gen1Controller, 'tags': ['系统工具-代码生成']},
     {'router': homeRouter, 'tags': ['产品官网']},
-    {'router': carInfoController, 'tags': ['测试代码生成']},
+    {'router': carInfoController, 'tags': ['小车']},
     {'router': partnerInfoController, 'tags': ['测试代码生成']},
+    {'router': autoScriptController, 'tags': ['脚本管理']},
+    {'router': autoEnvController, 'tags': ['环境管理']},
 ]
 
 app_controllers = [

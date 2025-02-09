@@ -18,7 +18,7 @@ from module_gen.utils.velocity_utils import VelocityUtils
 from module_gen.entity.vo.gen_table_column_vo import GenTableColumnModel, GenTableColumnPageModel
 from utils.common_util import CamelCaseUtil, SnakeCaseUtil
 from utils.page_util import PageResponseModel
-
+from utils.log_util import logger
 
 class GenTableService:
     """代码生成 服务层实现"""
@@ -97,6 +97,7 @@ class GenTableService:
     async def validate_edit(cls, gen_table: GenTableModel) -> None:
         """验证编辑"""
         if gen_table.tpl_category == "tree":
+            logger.info(gen_table)
             if not all([gen_table.tree_code, gen_table.tree_parent_code, gen_table.tree_name]):
                 raise ValueError("树表配置必须填写树编码字段、树父编码字段和树名称字段")
 
