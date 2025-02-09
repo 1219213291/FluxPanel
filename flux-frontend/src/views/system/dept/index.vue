@@ -293,7 +293,9 @@ function getList() {
     listDept(queryParams.value).then((response) => {
         deptList.value = proxy.handleTree(response.data, 'deptId')
         loading.value = false
+
     })
+
 }
 /** 取消按钮 */
 function cancel() {
