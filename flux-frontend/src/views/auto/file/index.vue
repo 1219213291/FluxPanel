@@ -2,28 +2,21 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
 
-      <el-form-item label="环境名称" prop="envName">
-        <el-input
-            v-model="queryParams.envName"
-            placeholder="请输入环境名称"
-            clearable
-            @keyup.enter="handleQuery"
-        />
+      <el-form-item label="创建时间" style="width: 308px">
+        <el-date-picker
+            v-model="daterangeCreateTime"
+            value-format="YYYY-MM-DD"
+            type="daterange"
+            range-separator="-"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+        ></el-date-picker>
       </el-form-item>
 
-      <el-form-item label="键" prop="key">
+      <el-form-item label="文件名" prop="fimeName">
         <el-input
-            v-model="queryParams.key"
-            placeholder="请输入键"
-            clearable
-            @keyup.enter="handleQuery"
-        />
-      </el-form-item>
-
-      <el-form-item label="值" prop="value">
-        <el-input
-            v-model="queryParams.value"
-            placeholder="请输入值"
+            v-model="queryParams.fimeName"
+            placeholder="请输入文件名"
             clearable
             @keyup.enter="handleQuery"
         />
@@ -41,7 +34,7 @@
             plain
             icon="Plus"
             @click="handleAdd"
-            v-hasPermi="['auto:env:add']"
+            v-hasPermi="['auto:file:add']"
         >新增
         </el-button>
       </el-col>
@@ -52,7 +45,7 @@
             icon="Edit"
             :disabled="single"
             @click="handleUpdate"
-            v-hasPermi="['auto:env:edit']"
+            v-hasPermi="['auto:file:edit']"
         >修改
         </el-button>
       </el-col>
@@ -63,7 +56,7 @@
             icon="Delete"
             :disabled="multiple"
             @click="handleDelete"
-            v-hasPermi="['auto:env:remove']"
+            v-hasPermi="['auto:file:remove']"
         >删除
         </el-button>
       </el-col>
@@ -73,49 +66,29 @@
             plain
             icon="Download"
             @click="handleExport"
-            v-hasPermi="['auto:env:export']"
+            v-hasPermi="['auto:file:export']"
         >导出
         </el-button>
       </el-col>
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="envList" @selection-change="handleSelectionChange"
-              row-key="id"
-              :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
-              :default-expand-all="isExpandAll"
-    >
+    <el-table v-loading="loading" :data="fileList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center"/>
-
-<!--      <el-table-column label="id" align="center" prop="id"/>-->
-
-      <el-table-column label="环境名称" align="center" prop="envName"/>
-
-      <el-table-column label="键" align="center" prop="key"/>
-      <el-table-column label="值" align="center" prop="value"/>
+      <el-table-column label="id" align="center" prop="id"/>
+      <el-table-column label="文件名" align="center" prop="fimeName"/>
+      <el-table-column label="文件路径" align="center" prop="filePath" show-overflow-tooltip />
       <el-table-column label="备注" align="center" prop="remark"/>
 
 
-      <el-table-column label="创建人" align="center" prop="createBy"/>
-
-      <el-table-column label="创建时间" align="center" prop="createTime"/>
-
-
-      <el-table-column label="更新人" align="center" prop="updateBy"/>
-
       <el-table-column label="更新时间" align="center" prop="updateTime"/>
-
-
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
-          <el-button link type="primary" icon="Plus" @click="handleUpdateEnv(scope.row)" v-hasPermi="['auto:env:edit']"
-                     v-if="!scope.row.parentId">新增
-          </el-button>
-          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['auto:env:edit']">
+          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['auto:file:edit']">
             修改
           </el-button>
           <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
-                     v-hasPermi="['auto:env:remove']">删除
+                     v-hasPermi="['auto:file:remove']">删除
           </el-button>
         </template>
       </el-table-column>
@@ -129,20 +102,23 @@
         @pagination="getList"
     />
 
-    <!-- 添加或修改环境表对话框 -->
+    <!-- 添加或修改文件管理对话框 -->
     <el-dialog :title="title" v-model="open" width="800px" append-to-body>
-      <el-form ref="envRef" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="fileRef" :model="form" :rules="rules" label-width="80px">
 
-        <el-form-item label="环境名称" prop="envName" v-if="!form.parentId">
-          <el-input v-model="form.envName" placeholder="请输入环境名称"/>
+        <el-form-item label="文件" prop="filePath">
+          <file-upload
+              v-model="form.filePath"
+              :limit="1"
+              :file-size="10"
+              :file-type="uploadFileType"
+              :is-show-tip="true"
+              @upload-complete="handleUploadComplete"
+          ></file-upload>
         </el-form-item>
 
-        <el-form-item label="键" prop="key" v-if="form.parentId">
-          <el-input v-model="form.key" placeholder="请输入键"  />
-        </el-form-item>
-
-        <el-form-item label="值" prop="value" v-if="form.parentId">
-          <el-input v-model="form.value" placeholder="请输入值" />
+        <el-form-item label="文件名" prop="fimeName">
+          <el-input v-model="form.fimeName" placeholder="请输入文件名"/>
         </el-form-item>
 
         <el-form-item label="备注" prop="remark">
@@ -161,12 +137,14 @@
   </div>
 </template>
 
-<script setup name="Env">
-import {listEnv, getEnv, delEnv, addEnv, updateEnv} from "@/api/auto/env";
+<script setup name="File">
+import {listFile, getFile, delFile, addFile, updateFile} from "@/api/auto/file";
 
 const {proxy} = getCurrentInstance();
-
-const envList = ref([]);
+const { auto_upload_type } = proxy.useDict('auto_upload_type')
+const uploadFileType = auto_upload_type.value.map(item => item.value);
+console.log(uploadFileType);
+const fileList = ref([]);
 const open = ref(false);
 const loading = ref(true);
 const showSearch = ref(true);
@@ -176,44 +154,45 @@ const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
 const daterangeCreateTime = ref([]);
-const daterangeUpdateTime = ref([]);
-const isExpandAll = ref(true)
 
 const data = reactive({
   form: {},
   queryParams: {
     pageNum: 1,
     pageSize: 10,
-    envName: null,
-    key: null,
-    value: null
+    createTime: null,
+    fimeName: null,
   },
-  rules: {}
+  rules: {
+    filePath: [
+      {required: true, message: "文件路径不能为空", trigger: "blur"}
+    ], fimeName: [
+      {required: true, message: "文件名不能为空", trigger: "blur"}
+    ],
+  }
 });
 
 const {queryParams, form, rules} = toRefs(data);
 
-/** 查询环境表列表 */
+/** 查询文件管理列表 */
 function getList() {
   loading.value = true;
-  queryParams.value.params = {};
   queryParams.value.params = {};
   if (null != daterangeCreateTime && '' != daterangeCreateTime) {
     queryParams.value.params["beginCreateTime"] = daterangeCreateTime.value[0];
     queryParams.value.params["endCreateTime"] = daterangeCreateTime.value[1];
   }
-  if (null != daterangeUpdateTime && '' != daterangeUpdateTime) {
-    queryParams.value.params["beginUpdateTime"] = daterangeUpdateTime.value[0];
-    queryParams.value.params["endUpdateTime"] = daterangeUpdateTime.value[1];
-  }
-  listEnv(queryParams.value).then(response => {
-    // envList.value = proxy.handleTree(response.rows, 'id')
-    envList.value = response.rows;
+  listFile(queryParams.value).then(response => {
+    fileList.value = response.rows;
     total.value = response.total;
     loading.value = false;
   });
-  console.log(envList)
+}
 
+// 上传后设置文件名
+function handleUploadComplete(x) {
+  form.value.fimeName = x.value[0]['name'].slice(x.value[0]['name'].lastIndexOf("/") + 1);
+  console.log(x.value[0]['name']);
 }
 
 // 取消按钮
@@ -228,16 +207,14 @@ function reset() {
     createBy: null,
     createTime: null,
     delFlag: null,
-    envName: null,
+    filePath: null,
+    fimeName: null,
     id: null,
-    key: null,
-    parentId: null,
     remark: null,
     updateBy: null,
-    updateTime: null,
-    value: null
+    updateTime: null
   };
-  proxy.resetForm("envRef");
+  proxy.resetForm("fileRef");
 }
 
 /** 搜索按钮操作 */
@@ -249,7 +226,6 @@ function handleQuery() {
 /** 重置按钮操作 */
 function resetQuery() {
   daterangeCreateTime.value = [];
-  daterangeUpdateTime.value = [];
   proxy.resetForm("queryRef");
   handleQuery();
 }
@@ -265,47 +241,32 @@ function handleSelectionChange(selection) {
 function handleAdd() {
   reset();
   open.value = true;
-  title.value = "新增环境";
+  title.value = "添加文件管理";
 }
 
 /** 修改按钮操作 */
 function handleUpdate(row) {
   reset();
-  const autoEnvId = row.id || ids.value
-  getEnv(autoEnvId).then(response => {
+  const autoFileManageId = row.id || ids.value
+  getFile(autoFileManageId).then(response => {
     form.value = response.data;
     open.value = true;
-    if (form.value.parentId){
-      title.value = "修改";
-    }
-    else {
-      title.value = "修改环境";
-    }
-
+    title.value = "修改文件管理";
   });
-}
-
-/** 新增key/value 环境 */
-function handleUpdateEnv(row) {
-  reset();
-  form.value.parentId = row.id
-  console.log(form.parentId)
-  open.value = true;
-  title.value = "新增";
 }
 
 /** 提交按钮 */
 function submitForm() {
-  proxy.$refs["envRef"].validate(valid => {
+  proxy.$refs["fileRef"].validate(valid => {
     if (valid) {
       if (form.value.id != null) {
-        updateEnv(form.value).then(response => {
+        updateFile(form.value).then(response => {
           proxy.$modal.msgSuccess("修改成功");
           open.value = false;
           getList();
         });
       } else {
-        addEnv(form.value).then(response => {
+        addFile(form.value).then(response => {
           proxy.$modal.msgSuccess("新增成功");
           open.value = false;
           getList();
@@ -318,8 +279,8 @@ function submitForm() {
 /** 删除按钮操作 */
 function handleDelete(row) {
   const _ids = row.id || ids.value;
-  proxy.$modal.confirm('是否确认删除环境表编号为"' + _ids + '"的数据项？').then(function () {
-    return delEnv(_ids);
+  proxy.$modal.confirm('是否确认删除文件管理编号为"' + _ids + '"的数据项？').then(function () {
+    return delFile(_ids);
   }).then(() => {
     getList();
     proxy.$modal.msgSuccess("删除成功");
@@ -330,9 +291,9 @@ function handleDelete(row) {
 
 /** 导出按钮操作 */
 function handleExport() {
-  proxy.download('auto/env/export', {
+  proxy.download('auto/file/export', {
     ...queryParams.value
-  }, `env_${new Date().getTime()}.xlsx`)
+  }, `file_${new Date().getTime()}.xlsx`)
 }
 
 getList();

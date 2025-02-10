@@ -23,6 +23,8 @@ from module_website.controller.home_controller import homeRouter
 from module_auto.controller.car_info_controller import carInfoController
 from module_auto.controller.auto_script_controller import autoScriptController
 from module_auto.controller.auto_env_controller import autoEnvController
+from module_auto.controller.auto_file_manage_controller import autoFileManageController
+
 admin_controllers = [
     {'router': loginController, 'tags': ['登录模块']},
     {'router': captchaController, 'tags': ['验证码模块']},
@@ -46,11 +48,13 @@ admin_controllers = [
     {'router': partnerInfoController, 'tags': ['测试代码生成']},
     {'router': autoScriptController, 'tags': ['脚本管理']},
     {'router': autoEnvController, 'tags': ['环境管理']},
+    {'router': autoFileManageController, 'tags': ['文件管理']}
 ]
 
 app_controllers = [
     {'router': appLoginController, 'prefix': '/wechat', 'tags': ['登录模块']},
 ]
+
 
 def get_admin_router():
     admin_router = APIRouter(prefix="")
@@ -58,10 +62,11 @@ def get_admin_router():
         admin_router.include_router(router=controller.get('router'), tags=controller.get('tags'))
     return admin_router
 
+
 def get_app_router():
     app_router = APIRouter(prefix="/api/v1")
     for controller in app_controllers:
-        app_router.include_router(router=controller.get('router'), prefix=controller.get('prefix') ,
+        app_router.include_router(router=controller.get('router'), prefix=controller.get('prefix'),
                                   tags=controller.get('tags'))
     return app_router
 
@@ -71,4 +76,3 @@ def register_router():
     all_router.include_router(router=get_admin_router())
     all_router.include_router(router=get_app_router())
     return all_router
-

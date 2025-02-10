@@ -6,6 +6,7 @@ from sqlalchemy import and_, delete, desc, func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from module_auto.entity.do.auto_env_do import AutoEnv
 from module_auto.entity.vo.auto_env_vo import AutoEnvPageModel, AutoEnvModel
+from utils.common_util import CamelCaseUtil
 from utils.page_util import PageUtil, PageResponseModel
 
 
@@ -15,43 +16,59 @@ class AutoEnvDao:
     async def get_by_id(cls, db: AsyncSession, auto_env_id: int) -> AutoEnv:
         """根据主键获取单条记录"""
         auto_env = (((await db.execute(
-                            select(AutoEnv)
-                            .where(AutoEnv.id == auto_env_id)))
-                       .scalars())
-                       .first())
+            select(AutoEnv)
+            .where(AutoEnv.id == auto_env_id)))
+                     .scalars())
+                    .first())
         return auto_env
 
     """
     查询
     """
+
     @classmethod
     async def get_auto_env_list(cls, db: AsyncSession,
-                             query_object: AutoEnvPageModel,
-                             data_scope_sql: str = None,
-                             is_page: bool = False) -> [list | PageResponseModel]:
+                                query_object: AutoEnvPageModel,
+                                data_scope_sql: str = None,
+                                is_page: bool = False) -> [list | PageResponseModel]:
 
         query = (
             select(AutoEnv)
             .where(
                 AutoEnv.env_name.like(f"%{query_object.env_name}%") if query_object.env_name else True,
-                AutoEnv.key == query_object.key if query_object.key else True,
-                AutoEnv.value == query_object.value if query_object.value else True,
                 AutoEnv.del_flag == '0',
+                AutoEnv.parent_id == None,
                 eval(data_scope_sql) if data_scope_sql else True,
             )
             .order_by(desc(AutoEnv.create_time))
             .distinct()
         )
-        auto_env_list = await PageUtil.paginate(db, query, query_object.page_num, query_object.page_size, is_page)
-        return auto_env_list
 
+        auto_env_list = await PageUtil.paginate(db, query, query_object.page_num, query_object.page_size, is_page)
+        for item in auto_env_list.rows:
+            query = (
+                select(AutoEnv)
+                .where(
+                    AutoEnv.parent_id == item['id'],
+                    AutoEnv.key == query_object.key if query_object.key else True,
+                    AutoEnv.value == query_object.value if query_object.value else True,
+                    AutoEnv.del_flag == '0',
+                    eval(data_scope_sql) if data_scope_sql else True,
+                )
+                .order_by(desc(AutoEnv.create_time))
+                .distinct()
+            )
+
+            item['children'] = await PageUtil.paginate(db, query, query_object.page_num, query_object.page_size)
+
+        return auto_env_list
 
     @classmethod
     async def add_auto_env(cls, db: AsyncSession, add_model: AutoEnvModel, auto_commit: bool = True) -> AutoEnv:
         """
         增加
         """
-        auto_env =  AutoEnv(**add_model.model_dump(exclude_unset=True))
+        auto_env = AutoEnv(**add_model.model_dump(exclude_unset=True))
         db.add(auto_env)
         await db.flush()
         if auto_commit:
@@ -71,7 +88,8 @@ class AutoEnvDao:
         return await cls.get_by_id(db, edit_model.id)
 
     @classmethod
-    async def del_auto_env(cls, db: AsyncSession, auto_env_ids: List[str], soft_del: bool = True, auto_commit: bool = True):
+    async def del_auto_env(cls, db: AsyncSession, auto_env_ids: List[str], soft_del: bool = True,
+                           auto_commit: bool = True):
         """
         删除
         """

@@ -6,7 +6,7 @@ from typing import List, Literal, Optional, Union
 from module_admin.annotation.pydantic_annotation import as_query
 
 
-class AutoEnvModel(BaseModel):
+class AutoFileManageModel(BaseModel):
     """
     表对应pydantic模型
     """
@@ -16,20 +16,16 @@ class AutoEnvModel(BaseModel):
     begin_create_time: Optional[datetime] =  Field(default=None, description='创建时间最小值')
     end_create_time: Optional[datetime] =  Field(default=None, description='创建时间最大值')
     del_flag: Optional[int] =  Field(default=None, description='逻辑删除（1：未删除，2：删除）')
-    env_name: Optional[str] =  Field(default=None, description='环境名称')
+    file_path: Optional[str] =  Field(default=None, description='文件路径')
+    fime_name: Optional[str] =  Field(default=None, description='文件名')
     id: Optional[int] =  Field(default=None, description='id')
-    key: Optional[str] =  Field(default=None, description='键')
-    parent_id: Optional[int] =  Field(default=None, description='父节点')
     remark: Optional[str] =  Field(default=None, description='备注')
     update_by: Optional[str] =  Field(default=None, description='更新人')
     update_time: Optional[datetime] =  Field(default=None, description='更新时间')
-    begin_update_time: Optional[datetime] =  Field(default=None, description='更新时间最小值')
-    end_update_time: Optional[datetime] =  Field(default=None, description='更新时间最大值')
-    value: Optional[str] =  Field(default=None, description='值')
-    # children: Optional[List] =  Field(default=None, description='子节点')
+
 
 @as_query
-class AutoEnvPageModel(AutoEnvModel):
+class AutoFileManagePageModel(AutoFileManageModel):
     """
     分页查询模型
     """

@@ -163,6 +163,7 @@ function uploadedSuccessfully() {
     uploadList.value = [];
     number.value = 0;
     emit("update:modelValue", listToString(fileList.value));
+    emit("upload-complete", fileList);
     proxy.$modal.closeLoading();
   }
 }

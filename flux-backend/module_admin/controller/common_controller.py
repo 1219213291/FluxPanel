@@ -9,7 +9,8 @@ commonController = APIRouter(prefix='/common', dependencies=[Depends(LoginServic
 
 @commonController.post('/upload')
 async def common_upload(request: Request, file: UploadFile = File(...)):
-    upload_result = await CommonService.upload_oss(request, file, oss_folder = "category_image/")
+    # upload_result = await CommonService.upload_oss(request, file, oss_folder = "category_image/")
+    upload_result = await CommonService.upload_service(request, file)
     logger.info('上传成功')
 
     return ResponseUtil.success(model_content=upload_result.result)
