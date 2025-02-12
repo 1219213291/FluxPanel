@@ -15,20 +15,31 @@ class AutoScriptDao:
     async def get_by_id(cls, db: AsyncSession, auto_script_id: int) -> AutoScript:
         """根据主键获取单条记录"""
         auto_script = (((await db.execute(
-                            select(AutoScript)
-                            .where(AutoScript.id == auto_script_id)))
-                       .scalars())
+            select(AutoScript)
+            .where(AutoScript.id == auto_script_id)))
+                        .scalars())
+                       .first())
+        return auto_script
+
+    @classmethod
+    async def get_by_script_code(cls, db: AsyncSession, script_code: str, script_id) -> AutoScript:
+        """根据主键获取单条记录"""
+        auto_script = (((await db.execute(
+            select(AutoScript)
+            .where(AutoScript.script_code == script_code, AutoScript.id != script_id if script_id else True,AutoScript.del_flag==1)))
+                        .scalars())
                        .first())
         return auto_script
 
     """
     查询
     """
+
     @classmethod
     async def get_auto_script_list(cls, db: AsyncSession,
-                             query_object: AutoScriptPageModel,
-                             data_scope_sql: str = None,
-                             is_page: bool = False) -> [list | PageResponseModel]:
+                                   query_object: AutoScriptPageModel,
+                                   data_scope_sql: str = None,
+                                   is_page: bool = False) -> [list | PageResponseModel]:
 
         query = (
             select(AutoScript)
@@ -47,13 +58,13 @@ class AutoScriptDao:
         auto_script_list = await PageUtil.paginate(db, query, query_object.page_num, query_object.page_size, is_page)
         return auto_script_list
 
-
     @classmethod
-    async def add_auto_script(cls, db: AsyncSession, add_model: AutoScriptModel, auto_commit: bool = True) -> AutoScript:
+    async def add_auto_script(cls, db: AsyncSession, add_model: AutoScriptModel,
+                              auto_commit: bool = True) -> AutoScript:
         """
         增加
         """
-        auto_script =  AutoScript(**add_model.model_dump(exclude_unset=True))
+        auto_script = AutoScript(**add_model.model_dump(exclude_unset=True))
         db.add(auto_script)
         await db.flush()
         if auto_commit:
@@ -61,7 +72,8 @@ class AutoScriptDao:
         return auto_script
 
     @classmethod
-    async def edit_auto_script(cls, db: AsyncSession, edit_model: AutoScriptModel, auto_commit: bool = True) -> AutoScript:
+    async def edit_auto_script(cls, db: AsyncSession, edit_model: AutoScriptModel,
+                               auto_commit: bool = True) -> AutoScript:
         """
         修改
         """
@@ -73,7 +85,8 @@ class AutoScriptDao:
         return await cls.get_by_id(db, edit_model.id)
 
     @classmethod
-    async def del_auto_script(cls, db: AsyncSession, auto_script_ids: List[str], soft_del: bool = True, auto_commit: bool = True):
+    async def del_auto_script(cls, db: AsyncSession, auto_script_ids: List[str], soft_del: bool = True,
+                              auto_commit: bool = True):
         """
         删除
         """

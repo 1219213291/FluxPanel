@@ -94,15 +94,7 @@
       <el-table-column label="键" align="center" prop="key"/>
       <el-table-column label="值" align="center" prop="value"/>
       <el-table-column label="备注" align="center" prop="remark"/>
-
-
-      <el-table-column label="创建人" align="center" prop="createBy"/>
-
       <el-table-column label="创建时间" align="center" prop="createTime"/>
-
-
-      <el-table-column label="更新人" align="center" prop="updateBy"/>
-
       <el-table-column label="更新时间" align="center" prop="updateTime"/>
 
 
@@ -110,6 +102,9 @@
         <template #default="scope">
           <el-button link type="primary" icon="Plus" @click="handleUpdateEnv(scope.row)" v-hasPermi="['auto:env:edit']"
                      v-if="!scope.row.parentId">新增
+          </el-button>
+          <el-button link type="primary" icon="DocumentCopy" @click="handleCopyEnv(scope.row)" v-hasPermi="['auto:env:edit']"
+                     v-if="!scope.row.parentId">复制
           </el-button>
           <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['auto:env:edit']">
             修改
@@ -162,7 +157,7 @@
 </template>
 
 <script setup name="Env">
-import {listEnv, getEnv, delEnv, addEnv, updateEnv} from "@/api/auto/env";
+import {listEnv, getEnv, delEnv, addEnv, updateEnv,copyEnv} from "@/api/auto/env";
 
 const {proxy} = getCurrentInstance();
 
@@ -293,7 +288,13 @@ function handleUpdateEnv(row) {
   open.value = true;
   title.value = "新增";
 }
-
+function handleCopyEnv(row) {
+  copyEnv(row.id).then(response => {
+    proxy.$modal.msgSuccess("复制成功");
+    open.value = false;
+    getList();
+  });
+}
 /** 提交按钮 */
 function submitForm() {
   proxy.$refs["envRef"].validate(valid => {

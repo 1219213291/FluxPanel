@@ -37,6 +37,7 @@ let editor = null
 onMounted(() => {
   // 定义 Monarch 语法高亮
   // 定义 Python 关键字列表
+
   if (props.language==='python'){
     const pythonKeywords = [
       'and', 'as', 'assert', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else',
@@ -119,6 +120,7 @@ onMounted(() => {
 // 监听 props 变化
 watch(() => props.modelValue, (newValue) => {
   if (editor && newValue !== editor.getValue()) {
+    console.log(newValue)
     editor.setValue(newValue)
   }
 })
@@ -132,6 +134,7 @@ watch(() => props.language, (newValue) => {
 // 组件卸载时清理编辑器实例
 onBeforeUnmount(() => {
   if (editor) {
+
     editor.dispose()
   }
 })

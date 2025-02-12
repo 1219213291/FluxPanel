@@ -22,6 +22,56 @@ class AutoEnvDao:
                     .first())
         return auto_env
 
+    @classmethod
+    async def get_by_parent_id(cls, db: AsyncSession, auto_env_parent_id: int):
+        """获取所有子节点"""
+        auto_env = (((await db.execute(
+            select(AutoEnv)
+            .where(AutoEnv.parent_id == auto_env_parent_id)))
+                     .scalars().all())
+        )
+        return auto_env
+
+    @classmethod
+    async def copy_env_by_id(cls, db: AsyncSession, auto_env_id: int) -> AutoEnv:
+        """根据主键获取单条记录"""
+        # 获取原始对象
+        auto_env = (((await db.execute(
+            select(AutoEnv)
+            .where(AutoEnv.id == auto_env_id)))
+                     .scalars())
+                    .first())
+
+        # 创建新的对象
+        new_env = AutoEnv(
+            create_time=datetime.now(),
+            remark=auto_env.remark,
+            env_name=auto_env.env_name+"_copy",
+        )
+        db.add(new_env)
+        await db.flush()  # 获取新对象的 id
+
+        # 获取子节点
+        child_envs = (((await db.execute(
+            select(AutoEnv)
+            .where(AutoEnv.parent_id == auto_env_id, AutoEnv.del_flag != 2)))
+                       .scalars())
+                      .all())
+
+        # 复制子节点
+        for item in child_envs:
+            new_child = AutoEnv(
+                create_time=datetime.now(),
+                parent_id=new_env.id,  # 设置新的父节点 ID
+                key=item.key,
+                value=item.value,
+                remark=auto_env.remark,
+            )
+            db.add(new_child)
+
+        await db.flush()
+        return auto_env
+
     """
     查询
     """

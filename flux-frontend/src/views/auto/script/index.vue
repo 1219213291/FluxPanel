@@ -18,23 +18,33 @@
             placeholder="请输入脚本名称"
             clearable
             @keyup.enter="handleQuery"
+            width="68px"
         />
       </el-form-item>
 
 
-      <el-form-item label="脚本类型" prop="scriptType">
-        <el-input
-            v-model="queryParams.scriptType"
-            placeholder="请输入脚本类型"
+      <el-form-item label="类别" prop="scriptType">
+        <el-select
+            v-model="form.scriptType"
             clearable
-            @keyup.enter="handleQuery"
-        />
+            collapse-tags
+            placeholder="Select"
+            style="width: 240px"
+        >
+          <el-option
+              v-for="item in script_type"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
         <el-button icon="Refresh" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
+
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
@@ -90,13 +100,13 @@
 
       <el-table-column label="脚本编码" align="center" prop="scriptCode"/>
 
-      <el-table-column label="脚本内容" align="center" prop="scriptContent"/>
-
       <el-table-column label="脚本名称" align="center" prop="scriptName"/>
+
+      <el-table-column label="脚本类型" align="center" prop="scriptType"/>
 
       <el-table-column label="脚本入参" align="center" prop="scriptParameters"/>
 
-      <el-table-column label="脚本类型" align="center" prop="scriptType"/>
+
 
 
       <el-table-column label="更新时间" align="center" prop="updateTime"/>
@@ -123,29 +133,48 @@
     <!-- 添加或修改Auto Script 表对话框 -->
     <el-dialog :title="title" v-model="open" width="800px" append-to-body>
       <el-form ref="scriptRef" :model="form" :rules="rules" label-width="80px">
+        <el-row :gutter="20">
+        <el-col :span="11">
+          <el-form-item label="脚本名称" prop="scriptName">
+            <el-input v-model="form.scriptName" placeholder="请输入脚本名称"/>
+          </el-form-item>
+        </el-col>
+        <el-col :span="11">
+          <el-form-item label="脚本编码" prop="scriptCode" >
+            <el-input v-model="form.scriptCode" placeholder="请输入脚本编码"/>
+          </el-form-item>
+        </el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="11">
+            <el-form-item label="类别" prop="scriptType">
+              <el-select
+                  v-model="form.scriptType"
 
-        <el-form-item label="脚本编码" prop="scriptCode">
-          <el-input v-model="form.scriptCode" placeholder="请输入脚本编码"/>
-        </el-form-item>
+                  collapse-tags
+                  collapse-tags-tooltip
+                  placeholder="Select"
+              >
+                <el-option
+                    v-for="item in script_type"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
 
-        <el-form-item label="脚本内容" prop="scriptContent">
+        </el-row>
+
+
+        <el-form-item label="脚本内容" prop="scriptContent" v-if="open">
           <MonacoEditor v-model="form.scriptContent" language="python"></MonacoEditor>
         </el-form-item>
 
-        <el-form-item label="脚本名称" prop="scriptName">
-          <el-input v-model="form.scriptName" placeholder="请输入脚本名称"/>
-        </el-form-item>
 
-        <el-form-item label="脚本入参" prop="scriptParameters">
-          <el-input v-model="form.scriptParameters" type="textarea" placeholder="请输入内容"/>
-        </el-form-item>
-
-        <el-form-item label="脚本类型" prop="scriptType">
-          <el-input v-model="form.scriptType" placeholder="请输入脚本类型"/>
-        </el-form-item>
-
-        <el-form-item label="更新人" prop="updateBy">
-          <el-input v-model="form.updateBy" placeholder="请输入更新人"/>
+        <el-form-item label="脚本入参" prop="scriptParameters" v-if="open">
+          <MonacoEditor v-model="form.scriptParameters" language="json"></MonacoEditor>
         </el-form-item>
 
       </el-form>
@@ -173,6 +202,7 @@ const single = ref(true);
 const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
+const {script_type} = proxy.useDict('script_type')
 
 const data = reactive({
   form: {},
@@ -185,7 +215,17 @@ const data = reactive({
     scriptParameters: null,
     scriptType: null,
   },
-  rules: {}
+  rules: {
+    scriptCode: [
+      {required: true, message: "脚本编码不能为空", trigger: "blur"}
+    ],
+    scriptContent: [
+      {required: true, message: "脚本不能为空", trigger: "blur"}
+    ],
+    scriptName: [
+      {required: true, message: "脚本名称不能为空", trigger: "blur"}
+    ],
+  }
 });
 
 const {queryParams, form, rules} = toRefs(data);
@@ -247,7 +287,7 @@ function handleSelectionChange(selection) {
 function handleAdd() {
   reset();
   open.value = true;
-  title.value = "添加Auto Script 表";
+  title.value = "新增脚本";
 }
 
 /** 修改按钮操作 */
@@ -257,7 +297,7 @@ function handleUpdate(row) {
   getScript(autoScriptId).then(response => {
     form.value = response.data;
     open.value = true;
-    title.value = "修改Auto Script 表";
+    title.value = "修改脚本";
   });
 }
 

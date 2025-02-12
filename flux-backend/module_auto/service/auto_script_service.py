@@ -25,6 +25,11 @@ class AutoScriptService:
         auto_script_model = AutoScriptModel(**CamelCaseUtil.transform_result(auto_script))
         return auto_script_model
 
+    @classmethod
+    async def get_auto_script_by_script_code(cls, query_db: AsyncSession, script_code: str,script_id: int=None):
+        auto_script = await AutoScriptDao.get_by_script_code(query_db, script_code, script_id)
+        return auto_script
+
 
     @classmethod
     async def add_auto_script(cls, query_db: AsyncSession, query_object: AutoScriptModel) -> AutoScriptModel:

@@ -25,6 +25,13 @@ export function addEnv(data) {
     data: data
   })
 }
+// 新增环境表
+export function copyEnv(id) {
+  return request({
+    url: '/auto/env/copy/'+id,
+    method: 'get'
+  })
+}
 
 // 修改环境表
 export function updateEnv(data) {

@@ -53,6 +53,17 @@ async def add_auto_env (
     add_dict_type_result = await AutoEnvService.add_auto_env(query_db, add_model)
     return ResponseUtil.success(data=add_dict_type_result)
 
+@autoEnvController.get('/copy/{env_id}', dependencies=[Depends(CheckUserInterfaceAuth('auto:env:add'))])
+@Log(title='auto_env', business_type=BusinessType.INSERT)
+async def add_auto_env (
+    request: Request,
+    env_id:int,
+    query_db: AsyncSession = Depends(get_db),
+    current_user: CurrentUserModel = Depends(LoginService.get_current_user),
+):
+    add_dict_type_result = await AutoEnvService.copy_auto_env(query_db, env_id)
+    return ResponseUtil.success(data=add_dict_type_result)
+
 @autoEnvController.put('/update', dependencies=[Depends(CheckUserInterfaceAuth('auto:env:update'))])
 @Log(title='auto_env', business_type=BusinessType.UPDATE)
 async def update_auto_env(

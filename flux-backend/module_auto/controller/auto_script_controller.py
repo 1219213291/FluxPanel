@@ -50,6 +50,9 @@ async def add_auto_script (
     query_db: AsyncSession = Depends(get_db),
     current_user: CurrentUserModel = Depends(LoginService.get_current_user),
 ):
+    script_code = await AutoScriptService.get_auto_script_by_script_code(query_db, add_model.script_code)
+    if script_code:
+        return ResponseUtil.error(msg='脚本编码已存在')
     add_dict_type_result = await AutoScriptService.add_auto_script(query_db, add_model)
     return ResponseUtil.success(data=add_dict_type_result)
 
@@ -61,6 +64,9 @@ async def update_auto_script(
     query_db: AsyncSession = Depends(get_db),
     current_user: CurrentUserModel = Depends(LoginService.get_current_user),
 ):
+    script_code = await AutoScriptService.get_auto_script_by_script_code(query_db, edit_model.script_code,edit_model.id)
+    if script_code:
+        return ResponseUtil.error(msg='脚本编码已存在')
     add_dict_type_result = await AutoScriptService.update_auto_script(query_db, edit_model)
     return ResponseUtil.success(data=add_dict_type_result)
 
